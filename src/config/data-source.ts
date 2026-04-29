@@ -1,15 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 import "reflect-metadata";
-import { User } from "../entities/User";
-import { UserProfile } from "../entities/UserProfile";
-import { Post } from "../entities/Post";
-import { Comment } from "../entities/Comment";
-import { Reaction } from "../entities/Reaction";
-import { Follow } from "../entities/Follow";
-
 import { DataSource } from "typeorm";
-import { VerificationToken } from "../entities/VerificationToket";
+const isProd = process.env.NODE_ENV === "production";
 export const AppDataSource = new DataSource({
     type: "mssql",
     host: process.env.DB_HOST,
@@ -19,14 +12,20 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME,
 
     synchronize: true,
-    migrations: [__dirname + "/migrations/*.ts"],
-    dropSchema: false, //true
+    entities: [
+        isProd
+            ? __dirname + "/src/entities/**/*.js" 
+            : "src/entities/**/*.ts",
+    ],
+
+    migrations: [
+        isProd ? __dirname + "/migrations/*.js" : "src/migrations/*.ts",
+    ],
+    dropSchema: false, 
     logging: false,
 
-    entities: [__dirname + "/entities/**/*.ts"],
-
     options: {
-        encrypt: false,
+        encrypt: true,
         trustServerCertificate: true,
     },
 });

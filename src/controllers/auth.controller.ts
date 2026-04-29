@@ -28,19 +28,6 @@ export const login = asyncHandler(async (req, res) => {
     return sendResponse(res, result, "Login exitoso");
 });
 
-// export const verify = asyncHandler(async (req, res) => {
-//     const { token } = req.params;
-
-//     if (!token) {
-//         throw new AppError("Token requerido", HttpStatus.BAD_REQUEST);
-//     }
-
-//     const result = await authService.verifyAccount(token as string);
-
-//     //return sendResponse(res, result, "Cuenta verificada");
-//     return res.redirect("http://localhost:5173/login");
-// });
-
 export const verify = asyncHandlerRedirect({
     successRedirect: `${FRONTEND_URL}/verify?status=success`,
     errorRedirect: `${FRONTEND_URL}/verify?status=error&`,
