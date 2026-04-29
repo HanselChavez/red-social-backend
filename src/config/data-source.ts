@@ -12,16 +12,16 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME,
 
     synchronize: true,
+
     entities: [
-        isProd
-            ? __dirname + "/src/entities/**/*.js" 
-            : "src/entities/**/*.ts",
+        isProd ? __dirname + "/entities/**/*.js" : "src/entities/**/*.ts",
     ],
 
     migrations: [
         isProd ? __dirname + "/migrations/*.js" : "src/migrations/*.ts",
     ],
-    dropSchema: false, 
+
+    dropSchema: false,
     logging: false,
 
     options: {
@@ -29,5 +29,3 @@ export const AppDataSource = new DataSource({
         trustServerCertificate: true,
     },
 });
-
-console.log("DB_HOST:", process.env.DB_HOST);
