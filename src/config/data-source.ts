@@ -19,11 +19,11 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME,
 
     synchronize: true,
-    migrations: ["src/migrations/*.ts"],
-    dropSchema: false,//true 
+    migrations: [__dirname + "/migrations/*.ts"],
+    dropSchema: false, //true
     logging: false,
 
-    entities: ["src/entities/**/*.ts"],
+    entities: [__dirname + "/entities/**/*.ts"],
 
     options: {
         encrypt: false,
