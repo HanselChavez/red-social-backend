@@ -3,6 +3,7 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import userRoutes from "./routes/user.routes";
+import postRoutes from "./routes/post.routes"
 import authRoutes from "./routes/auth.routes";
 import { errorMiddleware } from "./middleware/error.middleware";
 import { AppError } from "./errors/AppError";
@@ -35,6 +36,7 @@ app.use(
 app.use(express.json());
 
 app.use("/auth", authRoutes);
+app.use("/posts", postRoutes);
 app.use("/users", userRoutes);
 
 app.get("/", (req, res) => {
