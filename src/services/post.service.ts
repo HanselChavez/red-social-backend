@@ -9,7 +9,6 @@ import { CreatePostDto, UpdatePostDto } from "../dtos/post.dto";
 const postRepo = AppDataSource.getRepository(Post);
 const userRepo = AppDataSource.getRepository(User);
 
-// ✅ CREATE
 export const createPost = async (userId: number, data: CreatePostDto) => {
     const user = await userRepo.findOne({
         where: { id: userId },
@@ -22,10 +21,16 @@ export const createPost = async (userId: number, data: CreatePostDto) => {
             ErrorCode.USER_NOT_FOUND,
         );
     }
+    const fecha = new Date();
+
+    console.log("TIPO:", typeof fecha); // debe ser object
+    console.log("VALIDA:", isNaN(fecha.getTime())); // debe ser false
 
     const post = postRepo.create({
         content: data.content,
         visibility: data.visibility || "public",
+        createdAt: fecha,
+        imageUrl: data.imageUrl ?? null,
         user,
     });
 
@@ -36,7 +41,12 @@ export const createPost = async (userId: number, data: CreatePostDto) => {
 
 export const getPosts = async () => {
     return await postRepo.find({
-        relations: ["user", "user.profile"],
+        relations: [
+            "user",
+            "user.profile",
+            "comments",
+            "reactions",
+        ],
         order: { createdAt: "DESC" },
     });
 };
@@ -59,34 +69,34 @@ export const getPostById = async (id: number) => {
 };
 
 export const updatePost = async (
-  userId: number,
-  postId: number,
-  data: UpdatePostDto
+    userId: number,
+    postId: number,
+    data: UpdatePostDto
 ) => {
-  const post = await postRepo.findOne({
-    where: { id: postId },
-    relations: ["user"],
-  });
+    const post = await postRepo.findOne({
+        where: { id: postId },
+        relations: ["user"],
+    });
 
-  if (!post) {
-    throw new AppError("Post no encontrado", HttpStatus.NOT_FOUND);
-  }
+    if (!post) {
+        throw new AppError("Post no encontrado", HttpStatus.NOT_FOUND);
+    }
 
-  if (post.user.id !== userId) {
-    throw new AppError("No autorizado", HttpStatus.FORBIDDEN);
-  }
+    if (post.user.id !== userId) {
+        throw new AppError("No autorizado", HttpStatus.FORBIDDEN);
+    }
 
-  // 🔥 validación extra (pro)
-  if (!data.content && !data.visibility) {
-    throw new AppError("Nada para actualizar", HttpStatus.BAD_REQUEST);
-  }
+    // 🔥 validación extra (pro)
+    if (!data.content && !data.visibility) {
+        throw new AppError("Nada para actualizar", HttpStatus.BAD_REQUEST);
+    }
 
-  post.content = data.content ?? post.content;
-  post.visibility = data.visibility ?? post.visibility;
+    post.content = data.content ?? post.content;
+    post.visibility = data.visibility ?? post.visibility;
 
-  await postRepo.save(post);
+    await postRepo.save(post);
 
-  return post;
+    return post;
 };
 // ✅ DELETE
 export const deletePost = async (userId: number, postId: number) => {
@@ -112,7 +122,12 @@ export const getMyPosts = async (userId: number) => {
     const posts = await postRepo.find({
         where: { user: { id: userId } },
         order: { createdAt: "DESC" },
-        relations: ["user"],
+        relations: [
+            "user",
+            "user.profile",
+            "comments",
+            "reactions",
+        ],
     });
 
     return posts;

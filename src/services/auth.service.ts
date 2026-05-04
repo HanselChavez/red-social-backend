@@ -24,7 +24,6 @@ const refreshRepo = AppDataSource.getRepository(RefreshToken);
 const verificationRepo = AppDataSource.getRepository(VerificationToken);
 
 export const register = async (data: RegisterDto) => {
-    console.log(data);
     validateUserFormat(data);
     validateUpnEmail(data.email);
 

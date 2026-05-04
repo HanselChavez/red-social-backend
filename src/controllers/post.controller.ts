@@ -2,24 +2,33 @@ import * as postService from "../services/post.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import { HttpStatus } from "../utils/httpStatus";
 import { sendResponse } from "../utils/response";
+import { Request, Response, NextFunction } from "express";
+import { AppDataSource } from "../config/data-source";
+import { Post } from "../entities/Post";
+import { User } from "../entities/User";
 
-// CREATE
+
 export const create = asyncHandler(async (req, res) => {
     const userId = req.user.id;
 
-    const result = await postService.createPost(userId, req.body);
+    const imageUrl = req.file
+        ? `/uploads/posts/${req.file.filename}`
+        : null;
+
+    const result = await postService.createPost(userId, {
+        ...req.body,
+        imageUrl,
+    });
 
     return sendResponse(res, result, "Post creado", HttpStatus.CREATED);
 });
 
-// GET ALL
 export const getAll = asyncHandler(async (req, res) => {
     const result = await postService.getPosts();
 
     return sendResponse(res, result, "Posts obtenidos");
 });
 
-// GET ONE
 export const getOne = asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
 
@@ -28,7 +37,6 @@ export const getOne = asyncHandler(async (req, res) => {
     return sendResponse(res, result, "Post obtenido");
 });
 
-// UPDATE
 export const update = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const postId = Number(req.params.id);
@@ -38,7 +46,6 @@ export const update = asyncHandler(async (req, res) => {
     return sendResponse(res, result, "Post actualizado");
 });
 
-// DELETE
 export const remove = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const postId = Number(req.params.id);
@@ -48,7 +55,6 @@ export const remove = asyncHandler(async (req, res) => {
     return sendResponse(res, result, "Post eliminado");
 });
 export const getMyPosts = asyncHandler(async (req, res) => {
-    console.log(req)
     const result = await postService.getMyPosts(req.user!.id);
 
     return sendResponse(res, result, "Posts obtenidos");
@@ -65,3 +71,51 @@ export const updateVisibility = asyncHandler(async (req, res) => {
 
     return sendResponse(res, result, "Visibilidad actualizada");
 });
+
+/* Creando el createPost para las imagenes*/
+export const createPost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        const { content, visibility } = req.body;
+
+        const imageUrl = req.file
+            ? `/uploads/posts/${req.file.filename}`
+            : null;
+
+        const postRepository = AppDataSource.getRepository(Post);
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userId = (req as any).user.id;
+
+        const user = await userRepository.findOne({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            res.status(404).json({
+                message: "Usuario no encontrado",
+            });
+            return;
+        }
+
+        const newPost = postRepository.create({
+            content,
+            visibility: visibility || "public",
+            createdAt: new Date(),
+            imageUrl,
+            user,
+        });
+
+        const savedPost = await postRepository.save(newPost);
+
+        res.status(201).json({
+            message: "Post creado correctamente",
+            post: savedPost,
+        });
+    } catch (error) {
+        next(error);
+    }
+};

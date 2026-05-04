@@ -7,7 +7,7 @@ export const errorMiddleware = (
     res: Response,
     next: NextFunction,
 ) => {
-    console.error("MIDDLEWARE",err);
+    //console.error("MIDDLEWARE",err);
 
     const status = err.statusCode || 500;
     const message = err.message || "Error interno del servidor";

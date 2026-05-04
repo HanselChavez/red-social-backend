@@ -20,12 +20,17 @@ export class Post {
     @Column({ type: "varchar", length: 20, default: "public" })
     visibility!: "public" | "friends" | "private";
 
-    @Column({ type: "datetime", default: () => "GETDATE()" })
+    @Column({ type: "datetime" })
     createdAt!: Date;
+
+    /*El post para crear imagen con url*/
+    @Column({ type: "varchar", length: 255, nullable: true })
+    imageUrl!: string | null;
 
     @ManyToOne(() => User, (user) => user.posts, {
         nullable: false,
         onDelete: "NO ACTION"
+
     })
     user!: User;
 
